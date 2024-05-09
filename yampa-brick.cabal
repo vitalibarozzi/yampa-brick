@@ -1,0 +1,56 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           yampa-brick
+version:        0.1.0.0
+homepage:       https://github.com/vitalibarozzi/yampa-brick#readme
+bug-reports:    https://github.com/vitalibarozzi/yampa-brick/issues
+author:         J. V. Vitali Barozzi
+maintainer:     vitalivitor@gmail.com
+copyright:      2024 J. V. Vitali Barozzi
+license:        BSD-3-Clause
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/vitalibarozzi/yampa-brick
+
+library
+  exposed-modules:
+      FRP.Yampa.Brick
+  other-modules:
+      Paths_yampa_brick
+  autogen-modules:
+      Paths_yampa_brick
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      Yampa >=0.14.5 && <1
+    , base >=4.7 && <5
+    , brick >=1.9 && <2
+    , text >=2.0.2 && <3
+    , vty >=5.38 && <6
+  default-language: Haskell2010
+
+test-suite yampa-brick-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_yampa_brick
+  autogen-modules:
+      Paths_yampa_brick
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Yampa >=0.14.5 && <1
+    , base >=4.7 && <5
+    , brick >=1.9 && <2
+    , text >=2.0.2 && <3
+    , vty >=5.38 && <6
+    , yampa-brick
+  default-language: Haskell2010
