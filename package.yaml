@@ -16,7 +16,7 @@ dependencies:
 
 
 ghc-options:
-#- -Werror
+- -Werror
 - -Wall
 - -Wcompat
 - -Widentities
