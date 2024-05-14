@@ -20,24 +20,21 @@ import qualified Graphics.Vty as VTY
 reactInitBrick ::
     s ->
     SF s (Brick.Widget ()) ->
-    IO ( Chan VTY.Event
-       , ReactHandle s (Brick.Widget ())
-       )
+    ReactHandle (Yampa.Event VTY.Event) a ->
+    IO (ReactHandle s (Brick.Widget ()))
 {-# INLINABLE reactInitBrick #-}
-reactInitBrick s sf = do
+reactInitBrick s sf callbackHandle = do
     brickChan <- newBChan 10
-    eventChan <- newChan
-    ()        <- initBrick brickChan eventChan
-    handle    <- Yampa.reactInit (pure s) (actuate brickChan) sf
-    return 
-        ( eventChan
-        , handle
-        )
+    ()        <- initBrick brickChan
+    Yampa.reactInit 
+        (pure s) 
+        (actuate brickChan) 
+        sf
   where
-    initBrick brickChan eventChan = do
+    initBrick brickChan = do
         makeVty <- mkVty <$> standardIOConfig
         vty     <- makeVty
-        void -- TODO could be done with immortal instead
+        void -- TODO could be done with immortal instead?
             $ forkIO 
             $ void 
             $ Brick.customMain 
@@ -45,11 +42,11 @@ reactInitBrick s sf = do
                 makeVty 
                 (Just brickChan) 
                 (Brick.simpleApp Brick.emptyWidget) {
-                    Brick.appDraw          = return, -- we use the state for widgets
+                    Brick.appDraw        = return, -- we use the state for widgets
                     Brick.appHandleEvent = \e -> 
                         case e of
                             Brick.AppEvent wid -> Brick.put wid -- triggers Brick.appDraw
-                            Brick.VtyEvent vte -> liftIO (writeChan eventChan vte)
+                            Brick.VtyEvent vte -> void (liftIO (Yampa.react callbackHandle (0, Just (Yampa.Event vte))))
                             __________________ -> pure ()
                 }
                 Brick.emptyWidget
@@ -58,6 +55,5 @@ reactInitBrick s sf = do
         when updated $ do 
             threadDelay 1
             Brick.writeBChan brickChan widget 
-        -- keeps the yampa handler alive afterwards. no shutdown at the moment
         pure False
 
