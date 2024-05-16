@@ -9,8 +9,7 @@ import Control.Monad
 
 main :: IO ()
 main = do
-    callbackHandle <- Yampa.reactInit (pure Yampa.NoEvent) (\_ updated ev -> when updated (print ev) >> pure False) Yampa.returnA
-    handle  <- reactInitBrick () (Yampa.time >>> arr (Brick.txt . Text.pack . show)) callbackHandle
+    handle  <- reactInitBrick () (Yampa.time >>> arr (Brick.txt . Text.pack . show)) print
     forever $ do
         threadDelay    100000
         Yampa.react handle (0.1, Just ())

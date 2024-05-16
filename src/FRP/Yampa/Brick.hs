@@ -1,5 +1,5 @@
 module FRP.Yampa.Brick
-    (reactInitBrick)
+    (reactInitBrick, BrickWidget, VTYEvent)
 where
 
 
@@ -15,22 +15,46 @@ import qualified Graphics.Vty as VTY
 
 
 -----------------------------------------------------------
+type BrickWidget = Brick.Widget ()
+
+
+-----------------------------------------------------------
+type VTYEvent = VTY.Event
+
+
+-----------------------------------------------------------
 -- | Starts the handle for the SF and exposes it together
 -- with a chan where the terminal events can be received.
 reactInitBrick ::
+
+    (MonadIO m) =>
+
+    -- | Some initial state.
     s ->
-    SF s (Brick.Widget ()) ->
-    ReactHandle (Yampa.Event VTY.Event) a ->
-    IO (ReactHandle s (Brick.Widget ()))
+
+    -- | How to render stuff to the terminal over time.
+    SF s BrickWidget ->
+
+    -- | Called when we have an event.
+    (VTYEvent -> IO ()) ->
+
+    -- | Renders stuff given a state s and a dt, with function `Yampa.react`.
+    m (ReactHandle s BrickWidget)
+
 {-# INLINABLE reactInitBrick #-}
-reactInitBrick s sf callbackHandle = do
-    brickChan <- newBChan 10
-    ()        <- initBrick brickChan
-    Yampa.reactInit 
-        (pure s) 
-        (actuate brickChan) 
-        sf
+
+reactInitBrick s sf callback = do
+
+    liftIO $ do
+        brickChan <- newBChan 10
+        ()        <- initBrick brickChan
+        Yampa.reactInit 
+            (pure s) 
+            (actuate brickChan) 
+            sf
+
   where
+
     initBrick brickChan = do
         makeVty <- mkVty <$> standardIOConfig
         vty     <- makeVty
@@ -46,14 +70,15 @@ reactInitBrick s sf callbackHandle = do
                     Brick.appHandleEvent = \e -> 
                         case e of
                             Brick.AppEvent wid -> Brick.put wid -- triggers Brick.appDraw
-                            Brick.VtyEvent vte -> void (liftIO (Yampa.react callbackHandle (0, Just (Yampa.Event vte))))
+                            Brick.VtyEvent vte -> liftIO (callback vte)
                             __________________ -> pure ()
                 }
                 Brick.emptyWidget
+
     actuate brickChan _ updated widget = do
         -- sends the widget to be rendered by the brick thread
         when updated $ do 
             threadDelay 1
             Brick.writeBChan brickChan widget 
-        pure False
+        pure updated
 
