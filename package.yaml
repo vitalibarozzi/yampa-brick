@@ -8,11 +8,11 @@ copyright:           "2024 J. V. Vitali Barozzi"
 
 
 dependencies:
-- base  >= 4.7    && < 5
-- Yampa >= 0.14.5 && < 1
-- brick >= 1.9    && < 2
-- vty   >= 5.38   && < 6
-- text  >= 2.0.2  && < 3
+- base  >= 4.7 && < 5
+- Yampa >= 0.14.5
+- brick >= 1.9
+- vty   >= 5.38
+- text  >= 2.0.2
 
 
 ghc-options:
